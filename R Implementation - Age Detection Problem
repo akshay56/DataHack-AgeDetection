@@ -1,0 +1,99 @@
+*******************************************************************************
+
+## Notes:
+
+## OpenImageR has been used for reading image data to a raster array, I have used HOG (Histogram Of Gradients) as image depictor. 
+## HOG (Histogram of Gradients) would return a 54 dimensional vector of the HOG descriptors. 
+
+## https://cran.r-project.org/web/packages/OpenImageR/OpenImageR.pdf
+
+## Step by step explanation 
+
+## All the train images are converted into HOG features and stored in a CSV which is used to train the 3 class SVM model. 
+## Class variable converted to numeric naming YOUNG =1, MIDDLE = 2 and OLD = 3
+
+## SVM is used for image classification using HOG descriptors, the model is trained using the 19906 data points. 
+
+## It is then ran against the test set which are again converted as set of HOG features. 
+
+## Model output is stored back in a CSV which is being uploaded. 
+
+## Final output for the test data is as below
+
+## YOUNG = 28, MIDDLE = 6606 and OLD = 3
+
+## Result 
+
+##  1    2      3 
+##  28  6606    2 
+
+*********************************************************************************
+
+install.packages("OpenImageR")
+install.packages("e1071")
+
+library(OpenImageR)
+library(e1071)
+
+## A loop that reads all the image files from the train & test data directory into a raster array one by one and hog features are then extracted from each image. 
+
+## The hog output is then transformed so that it can be stored into the CSV as train & test data sets. The file is appended until all the images have been read and output stored
+
+filenamestrain <- list.files("D:/Competetions/AnaltyticsVidya Data Hack/Implementation/Train", pattern="*.jpg", full.names=TRUE)
+
+for(i in 1:length(filenamestrain)){
+  img <- readImage(filenamestrain[i])
+  hg <- HOG(img)
+  x <- as.data.frame(t(hg))
+write.table(x, file = "MyTrainData.csv", sep = ",", append = TRUE, quote = FALSE, col.names = FALSE, row.names = FALSE)
+}
+
+filenamestest <- list.files("D:/Competetions/AnaltyticsVidya Data Hack/Implementation/Test", pattern="*.jpg", full.names=TRUE)
+
+for(i in 1:length(filenamestest)){
+  img <- readImage(filenamestest[i])
+  hg <- HOG(img)
+  x <- as.data.frame(t(hg))
+write.table(x, file = "MyTestData.csv", sep = ",", append = TRUE, quote = FALSE, col.names = FALSE, row.names = FALSE)
+}
+
+## Load the train data set 
+
+dfTrain <- read.csv("D:/Competetions/AnaltyticsVidya Data Hack/Implementation/MyTrainData.csv", header=TRUE, sep=",")
+
+attach(dfTrain)
+
+# Subsets created for SVM 
+
+x <- subset(df, select= -Class)
+y <- subset(df, select= Class)
+
+# SVM Model implemented
+
+svm_model <- svm(x,y, type="C-classification")
+
+summary(svm_model)
+
+## Free some memory, my laptop isnt great
+
+rm(img)
+rm(hg)
+rm(x)
+rm(df)
+rm(a)
+rm(b)
+
+## Load the test data set 
+
+dfTest <- read.csv("D:/Competetions/AnaltyticsVidya Data Hack/Implementation/MyTestData.csv", header=TRUE, sep=",")
+
+predTest <- predict(svm_model,dfTest)
+
+summary(predTest)
+
+> 1    2    3 
+  28 6606    2 
+
+## Output written to a CSV file called answer.csv
+
+write.table(predTest, file = "answer.csv", sep = ",", append = TRUE, quote = FALSE, col.names = FALSE, row.names = FALSE)
