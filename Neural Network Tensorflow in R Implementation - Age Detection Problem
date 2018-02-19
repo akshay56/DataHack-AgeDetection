@@ -1,0 +1,198 @@
+
+# Using the libraries
+# Tensorflow version is 1.5.0 
+# Keras version is 2.1.5
+
+library(tensorflow)
+library(keras)
+
+# Create the train data frame, I am reading the top 16,000 rows only
+dfTrain <- read.csv("D:/<some path>/Neural Network - Tensorflow/TrainData_with_Name.csv", header=TRUE, sep=",", nrows = 16000)
+
+# Just reading the header
+header = read.csv("D:/<some path>/Neural Network - Tensorflow/TrainData_with_Name.csv", header = F, nrows = 1, as.is = T)
+
+# Create the test data frame, I am reading the remaining rows from CSV 
+dfTest <- read.csv("D:/<some path>/Neural Network - Tensorflow/TrainData_with_Name.csv", header=TRUE, sep=",", skip = 16000)
+
+# Add header to this test data frame
+colnames(dfTest)= header
+
+# Load the Train and Test Sets, seperate out "class" which is the target variable
+train_x <- subset(dfTrain, select= -Class)
+train_y <- subset(dfTrain, select= Class)
+
+test_x <- subset(dfTest, select= -Class)
+test_y <- subset(dfTest, select= Class)
+
+# Free some memory, these objects are not needed now
+rm(dfTest)
+rm(dfTrain)
+rm(header)
+
+# Convert data frames as matrics
+
+train_x <- data.matrix(train_x)
+train_y <- data.matrix(train_y)
+
+test_x <- data.matrix(test_x)
+test_y <- data.matrix(test_y)
+
+# removing the extra dimension from the matrix before converting the target variable as one hot coded vector. 
+
+test_y <- test_y - 1
+train_y <- train_y - 1
+
+# converting the target variable to one hot encoded vectors, this is a Keras inbuild function 
+
+test_y<-to_categorical(test_y,3)
+train_y<-to_categorical(train_y,3)
+
+# Create a blank model
+model <- keras_model_sequential()
+
+
+# Assign hyperparameters, list below
+
+# No of Neurons in Input Layer : 55 (no of HOG features per image + target feature)
+# No of Hidden Layer : 1
+# No of Neurons in Hidden Layers : 55 (no of HOG features per image + target feature)
+# No of Neurons in Output layer : 3 (classification as middle, old or young)
+# Epochs : 50 
+# Batch Size  : 10 
+# Dropout Rate : Adjusted to be 0.4 
+# Optimizer = ‘adam’
+# Loss = 'categorical_crossentropy'
+# metrics = c('accuracy')
+# Activation = ‘softmax’
+
+model %>% 
+layer_dense(units = 55, input_shape = 55) %>% 
+layer_dropout(rate=0.4)%>%
+layer_activation(activation = 'relu') %>% 
+layer_dense(units = 3) %>% 
+layer_activation(activation = 'softmax')
+
+# Compile the model 
+model %>% compile(loss = 'categorical_crossentropy', optimizer = 'adam',metrics = c('accuracy'))
+
+# fitting the model on the training dataset
+model %>% fit(train_x, train_y, epochs = 50, batch_size = 10)
+
+>>
+Epoch 1/50
+16000/16000 [==============================] - 3s 185us/step - loss: 7.7721 - acc: 0.5160
+Epoch 2/50
+16000/16000 [==============================] - 3s 165us/step - loss: 7.4405 - acc: 0.5374
+Epoch 3/50
+16000/16000 [==============================] - 3s 162us/step - loss: 7.3675 - acc: 0.5424
+Epoch 4/50
+16000/16000 [==============================] - 3s 171us/step - loss: 7.3804 - acc: 0.5412
+Epoch 5/50
+16000/16000 [==============================] - 3s 166us/step - loss: 7.3770 - acc: 0.5416
+Epoch 6/50
+16000/16000 [==============================] - 3s 161us/step - loss: 7.3607 - acc: 0.5428
+Epoch 7/50
+16000/16000 [==============================] - 3s 165us/step - loss: 7.3604 - acc: 0.5428
+Epoch 8/50
+16000/16000 [==============================] - 3s 164us/step - loss: 7.3557 - acc: 0.5430
+Epoch 9/50
+16000/16000 [==============================] - 3s 168us/step - loss: 7.3871 - acc: 0.5403
+Epoch 10/50
+16000/16000 [==============================] - 3s 168us/step - loss: 7.4057 - acc: 0.5391
+Epoch 11/50
+16000/16000 [==============================] - 3s 170us/step - loss: 7.3772 - acc: 0.5415
+Epoch 12/50
+16000/16000 [==============================] - 3s 177us/step - loss: 7.3588 - acc: 0.5424
+Epoch 13/50
+16000/16000 [==============================] - 3s 170us/step - loss: 7.3546 - acc: 0.5428
+Epoch 14/50
+16000/16000 [==============================] - 3s 184us/step - loss: 7.3580 - acc: 0.5427
+Epoch 15/50
+16000/16000 [==============================] - 3s 167us/step - loss: 7.3570 - acc: 0.5429
+Epoch 16/50
+16000/16000 [==============================] - 3s 167us/step - loss: 7.3598 - acc: 0.5418
+Epoch 17/50
+16000/16000 [==============================] - 3s 172us/step - loss: 7.3535 - acc: 0.5419
+Epoch 18/50
+16000/16000 [==============================] - 3s 166us/step - loss: 7.3410 - acc: 0.5423
+Epoch 19/50
+16000/16000 [==============================] - 3s 165us/step - loss: 7.3580 - acc: 0.5386
+Epoch 20/50
+16000/16000 [==============================] - 3s 172us/step - loss: 7.5203 - acc: 0.5254
+Epoch 21/50
+16000/16000 [==============================] - 3s 180us/step - loss: 7.3791 - acc: 0.5310
+Epoch 22/50
+16000/16000 [==============================] - 3s 169us/step - loss: 4.9689 - acc: 0.4597
+Epoch 23/50
+16000/16000 [==============================] - 3s 168us/step - loss: 0.9699 - acc: 0.5163
+Epoch 24/50
+16000/16000 [==============================] - 3s 173us/step - loss: 0.9545 - acc: 0.5429
+Epoch 25/50
+16000/16000 [==============================] - 3s 176us/step - loss: 0.9544 - acc: 0.5629
+Epoch 26/50
+16000/16000 [==============================] - 3s 169us/step - loss: 0.9544 - acc: 0.5889
+Epoch 27/50
+16000/16000 [==============================] - 3s 179us/step - loss: 0.9551 - acc: 0.5889
+Epoch 28/50
+16000/16000 [==============================] - 3s 170us/step - loss: 0.9549 - acc: 0.5993
+Epoch 29/50
+16000/16000 [==============================] - 3s 170us/step - loss: 0.9543 - acc: 0.5993
+Epoch 30/50
+16000/16000 [==============================] - 3s 171us/step - loss: 0.9544 - acc: 0.5993
+Epoch 31/50
+16000/16000 [==============================] - 3s 175us/step - loss: 0.9543 - acc: 0.5993
+Epoch 32/50
+16000/16000 [==============================] - 3s 177us/step - loss: 0.9543 - acc: 0.5996
+Epoch 33/50
+16000/16000 [==============================] - 3s 176us/step - loss: 0.9551 - acc: 0.6196
+Epoch 34/50
+16000/16000 [==============================] - 3s 180us/step - loss: 0.9544 - acc: 0.6349
+Epoch 35/50
+16000/16000 [==============================] - 3s 170us/step - loss: 0.9543 - acc: 0.6349	
+Epoch 36/50
+16000/16000 [==============================] - 3s 175us/step - loss: 0.9544 - acc: 0.6349
+Epoch 37/50
+16000/16000 [==============================] - 3s 170us/step - loss: 0.9543 - acc: 0.6349
+Epoch 38/50
+16000/16000 [==============================] - 3s 168us/step - loss: 0.9542 - acc: 0.6349
+Epoch 39/50
+16000/16000 [==============================] - 3s 170us/step - loss: 0.9544 - acc: 0.6438
+Epoch 40/50
+16000/16000 [==============================] - 3s 179us/step - loss: 0.9543 - acc: 0.6418
+Epoch 41/50
+16000/16000 [==============================] - 3s 168us/step - loss: 0.9543 - acc: 0.6399
+Epoch 42/50
+16000/16000 [==============================] - 3s 168us/step - loss: 0.9544 - acc: 0.6399
+Epoch 43/50
+16000/16000 [==============================] - 3s 171us/step - loss: 0.9544 - acc: 0.7154
+Epoch 44/50
+16000/16000 [==============================] - 3s 190us/step - loss: 0.9544 - acc: 0.7234
+Epoch 45/50
+16000/16000 [==============================] - 3s 185us/step - loss: 0.9544 - acc: 0.7395
+Epoch 46/50
+16000/16000 [==============================] - 3s 171us/step - loss: 0.9561 - acc: 0.7405
+Epoch 47/50
+16000/16000 [==============================] - 3s 170us/step - loss: 0.9544 - acc: 0.7419
+Epoch 48/50
+16000/16000 [==============================] - 3s 174us/step - loss: 0.9543 - acc: 0.7419
+Epoch 49/50
+16000/16000 [==============================] - 3s 171us/step - loss: 0.9544 - acc: 0.7419
+Epoch 50/50
+16000/16000 [==============================] - 3s 171us/step - loss: 0.9544 - acc: 0.7419
+
+
+# Evaluating model on the cross validation dataset
+loss_and_metrics <- model %>% evaluate(test_x, test_y, batch_size = 128)
+
+$loss
+[1] 0.9486693
+
+$acc
+[1] 0.7419867
+
+# Remove everything, test code (not to be used)
+# rm(test_x)
+# rm(test_y)
+# rm(train_x)
+# rm(train_y)
