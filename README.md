@@ -23,9 +23,9 @@ Output is a train and test CSV with HOG features against each image.
  Keras Model on Tensorflow:
  Train data extracted in the above steps haev been used for creating a Keras Sequencial Model with below hyperparameters
  
-o	No of Neurons in Input Layer : 54 (no of HOG features per image)
+o	No of Neurons in Input Layer : 55 (no of HOG features per image + target feature)
 o	No of Hidden Layer : 1
-o	No of Neurons in Hidden Layers : 54 (no of HOG features per image)
+o	No of Neurons in Hidden Layers : 55 (no of HOG features per image + target feature)
 o	No of Neurons in Output layer : 3 (classification as middle, old or young)
 o	Epochs : 50 
 o	Batch Size  : 10 
